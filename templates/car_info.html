@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Home Page{% endblock %}
+{% block content %}
+
+
+<div class='row'style='margin: 10px;'>
+   <form class="col-md-6">
+      <div class="input-group">
+      <div class="form-group"></div>
+      <div class="input-group-prepend">
+         <span class="input-group-text">VIN</span>
+       </div>
+      <input type="text" class="form-control" id="search_vin" placeholder="please enter VIN" value="5UXWX7C5*BA"/>
+      <button type="submit" class="btn btn-primary"  onclick="submit_message(event)">Search</button>
+     
+      </div>
+  
+   </form>
+</div>
+<div class='row'style='margin: 10px;'>
+   <div class="input-group col-md-4"></div>
+ <label class="alert alert-dark col-md-4 col-md-offset-4"  id="status">Searching Status (NHTS)</label>
+ </div>
+</div>
+
+<div class="row" style="margin: 10px;">
+   <div class="input-group col-md-4">
+      <div class="input-group-prepend">
+        <span class="input-group-text">Make</span>
+      </div>
+      <input id="make" type="text" class="form-control" placeholder="make" aria-label="make" aria-describedby="vin">
+    </div>
+    <div class="input-group col-md-4">
+      <div class="input-group-prepend">
+        <span class="input-group-text">Model</span>
+      </div>
+      <input  id="model" type="text" class="form-control" placeholder="model" aria-label="model" aria-describedby="model">
+    </div>
+    <div class="input-group col-md-4">
+      <div class="input-group-prepend">
+        <span class="input-group-text">year</span>
+      </div>
+      <input  id="year" type="text" class="form-control" placeholder="year" aria-label="model" aria-describedby="year">
+    </div>
+    
+</div>
+
+<div class='row'style='margin: 10px;'>
+   <div class="input-group col-md-4">
+      <div class="input-group-prepend">
+        <span class="input-group-text">Drive Type</span>
+      </div>
+      <input  id="drive_type" type="text" class="form-control" placeholder="drive type" aria-label="drive type" aria-describedby="drive type">
+    </div>
+    <div class="input-group col-md-4">
+      <div class="input-group-prepend">
+        <span class="input-group-text">Vehicle Type</span>
+      </div>
+      <input  id="vehicle_type" type="text" class="form-control" placeholder="vehicle type" aria-label="vehicle type" aria-describedby="vehicle type">
+    </div>
+    <div class="input-group col-md-4">
+      <div class="input-group-prepend">
+        <span class="input-group-text">Fuel Type</span>
+      </div>
+      <input  id="fuel_type" type="text" class="form-control" placeholder="Fuel Type" aria-label="Fuel Type" aria-describedby="Fuel Type">
+    </div>
+</div>
+
+<div class='row'style='margin: 10px;'>
+   <div class="input-group col-md-4">
+      <div class="input-group-prepend">
+        <span class="input-group-text">Trim</span>
+      </div>
+      <input  id="trim" type="text" class="form-control" placeholder="trim" aria-label="trim" aria-describedby="drive type">
+    </div>
+    <div class="input-group col-md-4">
+      <div class="input-group-prepend">
+        <span class="input-group-text">Transmission</span>
+      </div>
+      <input  id="trans" type="text" class="form-control" placeholder="Transmission" aria-label="Transmission" aria-describedby="Transmission">
+    </div>
+    <div class="input-group col-md-4">
+      <div class="input-group-prepend">
+        <span class="input-group-text">Series</span>
+      </div>
+      <input  id="series" type="text" class="form-control" placeholder="series" aria-label="series" aria-describedby="series">
+    </div>
+</div>
+
+
+
+
+
+
+{% block script %}
+
+<script>
+   
+ 
+   function statusMessage(message, cssclass=null){
+     $("#status").text(message)
+     if(cssclass != null){
+      $("#status").addClass(cssclass)
+     }
+    
+   }
+   function submit_message(e) {
+      e.preventDefault();
+      var vinVal = $("#search_vin").val();
+      statusMessage("Searching....")
+      var entry = {
+         vin: vinVal,
+      };
+
+      console.log(entry)
+      fetch(`${window.origin}/car_search`, {
+         method: "POST",
+         credentials: "include",
+         body: JSON.stringify(entry),
+         cache: "no-cache",
+         headers: new Headers({
+            "content-type": "application/json"
+         })
+      })
+         .then(function (response) {
+            if (response.status !== 200) {
+               console.log(`Looks like there was a problem. Status code: ${response.status}`);
+               statusMessage(`Looks like there was a problem. Status code: ${response.status}`)
+               return;
+            }
+            response.json().then(function (data) {
+               data = data.data
+               let info = {
+                            year: data.Results[9].Value,
+                            make: data.Results[6].Value,
+                            model: data.Results[8].Value,
+                            series: data.Results[11].Value, // 1500, 2500, etc.
+                            trim: data.Results[12].Value,
+                            type: data.Results[13].Value, // Vehicle type.
+                            body: data.Results[23].Value, // Body class.
+                            doors: data.Results[24].Value, // Door count.
+                            trans: data.Results[49].Value, // Transmission type.
+                            drive: data.Results[51].Value, // 4x2, 4x4, etc.
+                            cylinders: data.Results[70].Value, // Engine cylinder count.
+                            fuel: data.Results[77].Value, // Gasoline, Diesel.
+                        };
+
+               $("#make").val(getValue(info.make))
+               $("#model").val(getValue(info.model))
+               $("#year").val(getValue(info.year))
+               $("#drive_type").val(getValue(info.drive))
+               $("#vehicle_type").val(getValue(info.type))
+               $("#fuel_type").val(getValue(info.fuel))
+               $("#trim").val(getValue(info.trim))
+               $("#series").val(getValue(info.series))
+               $("#trans").val(getValue(info.trans))
+
+               statusMessage('Searching....done',"alert alert-success")
+
+            });
+         })
+         .catch(function (error) {
+            console.log("Fetch error: " + error);
+         });
+      
+         function getValue(value){
+            if(make == null){
+                  make = "Nil"
+               }
+               return value
+         }
+   }
+
+</script>
+
+{% endblock %}
+{% endblock %}
