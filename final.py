@@ -30,12 +30,12 @@ encoded = pickle.load(open("OrdinalEncoder.pkl", "rb"))
 
 
 #
-application = Flask(__name__)
+app = Flask(__name__)
 
-application.secret_key = "super secret key"
-application.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.secret_key = "super secret key"
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
-Swagger(application)
+Swagger(app)
 
 if __name__ != '__main__':
     gunicorn_logger = logging.getLogger('gunicorn.error')
@@ -46,7 +46,7 @@ if __name__ != '__main__':
 
 
 #Route 1
-@application.route('/', methods=['GET'])
+@app.route('/', methods=['GET'])
 def index():
     '''
     param  : base url will be called as GET 
@@ -62,7 +62,7 @@ def index():
 
 
 #Route 2
-@application.route('/api/predict', methods=['POST'])
+@app.route('/api/predict', methods=['POST'])
 def getPredictedPrice():
     '''
     param  : make,model,trim,year,miles,zip_code, VIN(optional)
@@ -179,7 +179,7 @@ def getPredictedPrice():
 
 
 #Route 3
-@application.route('/api/stats', methods=['POST'])
+@app.route('/api/stats', methods=['POST'])
 def getStatsPrice():
     '''
     param  : make,model,trim,year,miles,zip_code, VIN(optional)
@@ -280,4 +280,4 @@ def getStatsPrice():
 
 if __name__ == '__main__':
     # application.run(debug=True,port=80,host='0.0.0.0')
-    application.run(debug=True)
+    app.run(debug=True)
