@@ -12,7 +12,7 @@ import logging
 from datetime import datetime
 # from flask_restplus import Api, Resource, reqparse
 from io import StringIO
-from flasgger import Swagger
+#from flasgger import Swagger
 import numpy as np
 import pickle
 import pandas as pd
